@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Advanced Fiber Coupling Simulator v5 | DiCon Fiberoptics</title>
+    <title>Advanced Fiber Coupling Simulator v6 | DiCon Fiberoptics</title>
     
     <!-- 1. Load Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -66,7 +66,7 @@
                     <span id="langLabel">EN / 中文</span>
                 </button>
 
-                <span class="hidden md:inline text-xs text-slate-400">v5.0</span>
+                <span class="hidden md:inline text-xs text-slate-400">v6.0</span>
                 <span id="systemStatus" class="inline-flex items-center rounded-md bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20">
                     System Ready
                 </span>
@@ -280,12 +280,12 @@
 
                     <div class="mt-4 flex justify-center gap-6 text-xs text-slate-500">
                         <div class="flex items-center gap-2">
-                            <span class="w-3 h-3 rounded-full bg-blue-500 ring-2 ring-blue-200"></span>
-                            <span data-i18n="legend_fixed">Fixed (Receiver)</span>
+                            <span class="w-3 h-3 rounded-full bg-red-500 ring-2 ring-red-200"></span>
+                            <span data-i18n="legend_in">Input (Source)</span>
                         </div>
                         <div class="flex items-center gap-2">
-                            <span class="w-3 h-3 rounded-full bg-red-500 ring-2 ring-red-200"></span>
-                            <span data-i18n="legend_moving">Moving (Source)</span>
+                            <span class="w-3 h-3 rounded-full bg-blue-500 ring-2 ring-blue-200"></span>
+                            <span data-i18n="legend_out">Output (Receiver)</span>
                         </div>
                     </div>
                 </div>
@@ -334,7 +334,7 @@
     <!-- JavaScript Logic -->
     <script>
         window.addEventListener('load', function() {
-            console.log("DiCon Advanced System v5 Initializing...");
+            console.log("DiCon Advanced System v6 Initializing...");
             
             // --- 0. Translations ---
             const i18n = {
@@ -361,8 +361,8 @@
                     viz1_title: "Fiber Alignment Visualization (Top & Side Views)",
                     viz_top_label: "Top View (Beam Overlap)",
                     viz_side_label: "Side View (Z-Gap & Tilt)",
-                    legend_fixed: "Fixed (Receiver)",
-                    legend_moving: "Moving (Source)",
+                    legend_in: "Input (Source)",
+                    legend_out: "Output (Receiver)",
                     viz2_title: "Alignment Sensitivity Profile (X-Axis)",
                     viz2_desc: "Sensitivity curve showing the impact of lateral offset on coupling efficiency.",
                     viz3_title: "2D Coupling Landscape (Heatmap)",
@@ -398,8 +398,8 @@
                     viz1_title: "光纖對位視圖 (上視圖 & 側視圖)",
                     viz_top_label: "上視圖 (光斑重疊狀況)",
                     viz_side_label: "側視圖 (Z 軸間距與傾角)",
-                    legend_fixed: "固定端 (接收)",
-                    legend_moving: "移動端 (光源)",
+                    legend_in: "輸入端 (Source)",
+                    legend_out: "輸出端 (Receiver)",
                     viz2_title: "X 軸偏移敏感度曲線 (Sensitivity)",
                     viz2_desc: "顯示橫向偏移對耦合效率的影響曲線 (高斯分佈)。",
                     viz3_title: "2D 耦合效率熱圖 (Heatmap)",
@@ -626,7 +626,7 @@
                 ctx.beginPath(); ctx.moveTo(toX, toY); ctx.lineTo(toX - headlen * Math.cos(angle - Math.PI / 6), toY - headlen * Math.sin(angle - Math.PI / 6)); ctx.lineTo(toX - headlen * Math.cos(angle + Math.PI / 6), toY - headlen * Math.sin(angle + Math.PI / 6)); ctx.fillStyle = color; ctx.fill();
             }
 
-            // B. Canvas Side View
+            // B. Canvas Side View (UPDATED LOGIC: In/Red/Left -> Out/Blue/Right)
             const ctxSide = els.canvasSide.getContext('2d');
 
             function drawSideView() {
@@ -642,41 +642,55 @@
                 ctxSide.beginPath(); ctxSide.moveTo(0, centerY); ctxSide.lineTo(w, centerY); ctxSide.stroke(); ctxSide.setLineDash([]);
 
                 const fiberWidth = 40; const fiberHeight = 80; 
-                const fixedFiberXEnd = w * 0.2; 
                 
-                // 1. Fixed Fiber
-                ctxSide.fillStyle = '#1e3a8a'; ctxSide.fillRect(fixedFiberXEnd - fiberWidth, centerY - fiberHeight/2, fiberWidth, fiberHeight);
-                ctxSide.fillStyle = '#3b82f6'; ctxSide.fillRect(fixedFiberXEnd - fiberWidth, centerY - (physics.w0_out*scaleY), fiberWidth, physics.w0_out*2*scaleY);
-                ctxSide.beginPath(); ctxSide.moveTo(fixedFiberXEnd, centerY - fiberHeight/2); ctxSide.lineTo(fixedFiberXEnd, centerY + fiberHeight/2); ctxSide.strokeStyle = '#60a5fa'; ctxSide.lineWidth=2; ctxSide.stroke();
+                // Fixed Anchor for Input (Source/Red) is Left
+                const inputFiberXEnd = w * 0.2; 
+                
+                // 1. Draw Input Fiber (Source/Red) - Fixed on Left
+                ctxSide.fillStyle = '#991b1b'; // Dark Red body
+                ctxSide.fillRect(inputFiberXEnd - fiberWidth, centerY - fiberHeight/2, fiberWidth, fiberHeight);
+                ctxSide.fillStyle = '#ef4444'; // Red Core
+                ctxSide.fillRect(inputFiberXEnd - fiberWidth, centerY - (physics.w0_in*scaleY), fiberWidth, physics.w0_in*2*scaleY);
+                ctxSide.beginPath(); ctxSide.moveTo(inputFiberXEnd, centerY - fiberHeight/2); ctxSide.lineTo(inputFiberXEnd, centerY + fiberHeight/2); ctxSide.strokeStyle = '#fca5a5'; ctxSide.lineWidth=2; ctxSide.stroke();
 
-                // 2. Moving Fiber
+                // 2. Draw Output Fiber (Receiver/Blue) - Moving on Right
                 const zGapPx = state.z * scaleX;
                 const lateralOffsetPx = Math.sqrt(state.x*state.x + state.y*state.y) * scaleY;
-                const movingFiberXStart = fixedFiberXEnd + zGapPx;
-                const movingFiberYCenter = centerY - lateralOffsetPx; 
+                
+                const outputFiberXStart = inputFiberXEnd + zGapPx;
+                const outputFiberYCenter = centerY - lateralOffsetPx; 
 
                 ctxSide.save();
-                ctxSide.translate(movingFiberXStart, movingFiberYCenter);
+                ctxSide.translate(outputFiberXStart, outputFiberYCenter);
+                // Rotate Output Fiber (Tilt)
                 const tiltRad = -Math.sqrt(state.tx*state.tx + state.ty*state.ty) * (Math.PI/180);
                 ctxSide.rotate(tiltRad * 5); 
 
-                ctxSide.fillStyle = '#991b1b'; ctxSide.fillRect(0, -fiberHeight/2, fiberWidth, fiberHeight);
-                ctxSide.fillStyle = '#ef4444'; ctxSide.fillRect(0, -(physics.w0_in*scaleY), fiberWidth, physics.w0_in*2*scaleY);
-                ctxSide.beginPath(); ctxSide.moveTo(0, -fiberHeight/2); ctxSide.lineTo(0, fiberHeight/2); ctxSide.strokeStyle = '#fca5a5'; ctxSide.lineWidth=2; ctxSide.stroke();
+                ctxSide.fillStyle = '#1e3a8a'; // Dark Blue body
+                ctxSide.fillRect(0, -fiberHeight/2, fiberWidth, fiberHeight);
+                ctxSide.fillStyle = '#3b82f6'; // Blue Core
+                ctxSide.fillRect(0, -(physics.w0_out*scaleY), fiberWidth, physics.w0_out*2*scaleY);
+                ctxSide.beginPath(); ctxSide.moveTo(0, -fiberHeight/2); ctxSide.lineTo(0, fiberHeight/2); ctxSide.strokeStyle = '#60a5fa'; ctxSide.lineWidth=2; ctxSide.stroke();
                 ctxSide.restore(); 
 
-                // 3. Beam Cone
-                const beamStartX = movingFiberXStart;
-                const beamEndX = fixedFiberXEnd;
+                // 3. Beam Cone (Source Red -> Receiver Blue)
+                // Starts at Input (Left), expands to Output (Right)
+                
+                const beamStartX = inputFiberXEnd;
+                const beamEndX = outputFiberXStart;
+                
+                // Width at Start = w0_in
                 const beamRadStart = physics.w0_in * scaleY;
+                
+                // Width at End = w(z)
                 const wzAtReceiver = physics.w0_in * Math.sqrt(1 + Math.pow(state.z/physics.zR_in, 2));
                 const beamRadEnd = wzAtReceiver * scaleY;
 
                 ctxSide.beginPath();
-                ctxSide.moveTo(beamStartX, movingFiberYCenter - beamRadStart);
-                ctxSide.lineTo(beamEndX, centerY - beamRadEnd);
-                ctxSide.lineTo(beamEndX, centerY + beamRadEnd);
-                ctxSide.lineTo(beamStartX, movingFiberYCenter + beamRadStart);
+                ctxSide.moveTo(beamStartX, centerY - beamRadStart);
+                ctxSide.lineTo(beamEndX, outputFiberYCenter - beamRadEnd);
+                ctxSide.lineTo(beamEndX, outputFiberYCenter + beamRadEnd);
+                ctxSide.lineTo(beamStartX, centerY + beamRadStart);
                 ctxSide.closePath();
                 
                 const grd = ctxSide.createLinearGradient(beamStartX, centerY, beamEndX, centerY);
