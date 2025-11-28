@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>互動式光纖耦合效率模擬器 (修復版) | Precision Photonics</title>
+    
+    <!-- 1. Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- 2. Load Chart Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+    
+    <style>
+        /* Chart Container Styling */
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+        #beamCanvas {
+            border-radius: 50%;
+            background: #0f172a; /* Slate 900 */
+            box-shadow: inset 0 0 20px #000;
+            display: block;
+            margin: 0 auto;
+        }
+        /* Custom Range Slider Styling */
+        input[type=range] {
+            -webkit-appearance: none; 
+            background: transparent; 
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+        }
+        input[type=range]:focus {
+            outline: none;
+        }
+    </style>
+    <!-- Chosen Palette: Slate & Blue (Scientific/Clean) -->
+    <!-- Application Structure Plan: Dashboard layout. Fixed initialization logic to prevent null reference errors. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased selection:bg-blue-200 selection:text-blue-900 font-sans">
+
+    <!-- Header -->
+    <header class="bg-white shadow-sm border-b border-slate-200 sticky top-0 z-20">
+        <div class="container mx-auto px-4 py-4 flex flex-col md:flex-row justify-between items-center">
+            <div class="flex items-center gap-2">
+                <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold">λ</div>
+                <div>
+                    <h1 class="text-xl font-bold text-slate-900 tracking-tight">FIBER<span class="text-blue-600">OPTICS</span> LAB</h1>
+                    <p class="text-xs text-slate-500">SMF-28 Coupling Efficiency Simulator</p>
+                </div>
+            </div>
+            <div class="mt-2 md:mt-0 text-right">
+                <span id="systemStatus" class="inline-flex items-center rounded-md bg-yellow-50 px-2 py-1 text-xs font-medium text-yellow-700 ring-1 ring-inset ring-yellow-600/20">
+                    Initializing...
+                </span>
+            </div>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-4 py-8">
+        
+        <!-- Intro -->
+        <section class="mb-8 max-w-4xl mx-auto text-center">
+            <h2 class="text-2xl font-bold mb-2 text-slate-800">光纖對準與耦合效率可視化</h2>
+            <p class="text-slate-600 text-sm md:text-base max-w-2xl mx-auto">
+                調整下方參數 (X, Y, Z, Tilt) 以模擬兩根單模光纖 (SMF) 在自由空間中的耦合情況。
+                觀察 <strong class="text-blue-600">光束重疊 (Beam Overlap)</strong> 與 <strong class="text-blue-600">效率熱圖 (Heatmap)</strong> 的變化。
+            </p>
+        </section>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            
+            <!-- LEFT COLUMN: Controls -->
+            <div class="lg:col-span-4 space-y-6">
+                
+                <!-- Result Display -->
+                <div class="bg-white rounded-xl shadow-md overflow-hidden border border-slate-100 ring-1 ring-slate-900/5">
+                    <div class="bg-gradient-to-r from-blue-900 to-blue-800 px-6 py-4 flex justify-between items-center">
+                        <h3 class="text-white font-semibold text-sm">即時計算結果</h3>
+                        <span class="text-blue-200 text-xs font-mono">Real-time</span>
+                    </div>
+                    <div class="p-6 text-center">
+                        <div class="grid grid-cols-2 gap-4 mb-4">
+                            <div class="bg-slate-50 p-3 rounded-lg border border-slate-100">
+                                <span class="block text-[10px] text-slate-400 uppercase font-bold tracking-wider mb-1">Efficiency</span>
+                                <span id="effDisplay" class="text-3xl font-bold text-blue-600 font-mono">--%</span>
+                            </div>
+                            <div class="bg-slate-50 p-3 rounded-lg border border-slate-100">
+                                <span class="block text-[10px] text-slate-400 uppercase font-bold tracking-wider mb-1">Insertion Loss</span>
+                                <span id="lossDisplay" class="text-3xl font-bold text-red-500 font-mono">-- dB</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Progress Bar -->
+                        <div class="relative w-full bg-slate-200 rounded-full h-3 overflow-hidden">
+                            <div id="efficiencyBar" class="absolute top-0 left-0 h-full bg-blue-500 transition-all duration-300 ease-out" style="width: 0%"></div>
+                        </div>
+                        
+                        <div id="feedbackText" class="mt-4 p-2 rounded bg-slate-50 text-xs text-slate-500 min-h-[3em] flex items-center justify-center">
+                            Loading physics engine...
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Controls -->
+                <div class="bg-white rounded-xl shadow-md p-6 border border-slate-100">
+                    <div class="flex items-center justify-between mb-6">
+                        <h3 class="text-base font-bold text-slate-800">參數設定 (Alignment)</h3>
+                        <button id="resetBtn" class="text-xs text-blue-600 hover:text-blue-800 font-medium px-2 py-1 bg-blue-50 rounded transition-colors">
+                            ↺ 重置 (Reset)
+                        </button>
+                    </div>
+                    
+                    <div class="space-y-6">
+                        <!-- Z Axis -->
+                        <div class="relative">
+                            <div class="flex justify-between mb-2">
+                                <label for="zInput" class="text-sm font-bold text-slate-700 flex items-center">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-slate-400 mr-2"></span>Z: 軸向距離 (Gap)
+                                </label>
+                                <span id="zVal" class="text-xs font-mono bg-slate-100 px-2 py-0.5 rounded text-slate-600">0 μm</span>
+                            </div>
+                            <input type="range" id="zInput" min="0" max="200" step="1" value="0" 
+                                class="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:bg-slate-600 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:shadow-sm hover:[&::-webkit-slider-thumb]:scale-110 transition-all">
+                        </div>
+
+                        <!-- X Axis -->
+                        <div class="relative">
+                            <div class="flex justify-between mb-2">
+                                <label for="xInput" class="text-sm font-bold text-slate-700 flex items-center">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-red-500 mr-2"></span>X: 橫向偏移
+                                </label>
+                                <span id="xVal" class="text-xs font-mono bg-red-50 px-2 py-0.5 rounded text-red-600">0.0 μm</span>
+                            </div>
+                            <input type="range" id="xInput" min="-15" max="15" step="0.1" value="0" 
+                                class="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:bg-red-500 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:shadow-sm hover:[&::-webkit-slider-thumb]:scale-110 transition-all">
+                        </div>
+
+                        <!-- Y Axis -->
+                        <div class="relative">
+                            <div class="flex justify-between mb-2">
+                                <label for="yInput" class="text-sm font-bold text-slate-700 flex items-center">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-red-500 mr-2"></span>Y: 橫向偏移
+                                </label>
+                                <span id="yVal" class="text-xs font-mono bg-red-50 px-2 py-0.5 rounded text-red-600">0.0 μm</span>
+                            </div>
+                            <input type="range" id="yInput" min="-15" max="15" step="0.1" value="0" 
+                                class="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:bg-red-500 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:shadow-sm hover:[&::-webkit-slider-thumb]:scale-110 transition-all">
+                        </div>
+
+                        <div class="border-t border-slate-100 my-4"></div>
+
+                        <!-- Tilt X -->
+                        <div class="relative">
+                            <div class="flex justify-between mb-2">
+                                <label for="txInput" class="text-sm font-bold text-slate-700 flex items-center">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-purple-500 mr-2"></span>Tx: 角度 (Tilt X)
+                                </label>
+                                <span id="txVal" class="text-xs font-mono bg-purple-50 px-2 py-0.5 rounded text-purple-600">0.0°</span>
+                            </div>
+                            <input type="range" id="txInput" min="-3" max="3" step="0.1" value="0" 
+                                class="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:bg-purple-500 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:shadow-sm hover:[&::-webkit-slider-thumb]:scale-110 transition-all">
+                        </div>
+
+                        <!-- Tilt Y -->
+                        <div class="relative">
+                            <div class="flex justify-between mb-2">
+                                <label for="tyInput" class="text-sm font-bold text-slate-700 flex items-center">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-purple-500 mr-2"></span>Ty: 角度 (Tilt Y)
+                                </label>
+                                <span id="tyVal" class="text-xs font-mono bg-purple-50 px-2 py-0.5 rounded text-purple-600">0.0°</span>
+                            </div>
+                            <input type="range" id="tyInput" min="-3" max="3" step="0.1" value="0" 
+                                class="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:bg-purple-500 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:shadow-sm hover:[&::-webkit-slider-thumb]:scale-110 transition-all">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Parameters Info -->
+                <div class="bg-blue-50/50 rounded-xl p-4 border border-blue-100 text-xs text-blue-800">
+                    <p class="font-bold mb-1">模擬規格 (SMF-28):</p>
+                    <ul class="list-disc list-inside space-y-1 opacity-80">
+                        <li>Wavelength: 1550 nm</li>
+                        <li>Mode Field Diameter: 10.4 μm</li>
+                        <li>Medium: Air (n=1)</li>
+                        <li>Beam Profile: Gaussian Approximation</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- RIGHT COLUMN: Visualizations -->
+            <div class="lg:col-span-8 space-y-6">
+                
+                <!-- Visualization 1: Beam Overlap -->
+                <div class="bg-white rounded-xl shadow-md p-6 border border-slate-100">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-base font-bold text-slate-800 flex items-center gap-2">
+                            <span class="flex items-center justify-center w-6 h-6 rounded-full bg-slate-100 text-slate-600 text-xs">1</span>
+                            光束相對位置 (Beam View)
+                        </h3>
+                        <span class="text-[10px] text-slate-400 border border-slate-200 px-2 py-1 rounded">Scale: ~5μm/div</span>
+                    </div>
+                    
+                    <!-- Canvas Container -->
+                    <div class="flex justify-center bg-slate-50 rounded-lg py-4 border border-slate-100">
+                        <canvas id="beamCanvas" width="320" height="320"></canvas>
+                    </div>
+
+                    <div class="mt-4 flex justify-center gap-6 text-xs text-slate-500">
+                        <div class="flex items-center gap-2">
+                            <span class="w-3 h-3 rounded-full bg-blue-500 ring-2 ring-blue-200"></span> 固定端 (Fixed)
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="w-3 h-3 rounded-full bg-red-500 ring-2 ring-red-200"></span> 移動端 (Moving)
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Visualization 2: Sensitivity -->
+                <div class="bg-white rounded-xl shadow-md p-6 border border-slate-100">
+                    <div class="flex justify-between items-center mb-2">
+                        <h3 class="text-base font-bold text-slate-800 flex items-center gap-2">
+                            <span class="flex items-center justify-center w-6 h-6 rounded-full bg-slate-100 text-slate-600 text-xs">2</span>
+                            X 軸偏移敏感度 (Sensitivity)
+                        </h3>
+                    </div>
+                    <p class="text-xs text-slate-500 mb-4">當前 Z 與 Tilt 條件下，改變 X 對效率的影響。</p>
+                    <div class="chart-container">
+                        <canvas id="sensitivityChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Visualization 3: Heatmap -->
+                <div class="bg-white rounded-xl shadow-md p-6 border border-slate-100">
+                    <div class="flex justify-between items-center mb-2">
+                        <h3 class="text-base font-bold text-slate-800 flex items-center gap-2">
+                            <span class="flex items-center justify-center w-6 h-6 rounded-full bg-slate-100 text-slate-600 text-xs">3</span>
+                            2D 耦合熱圖 (Coupling Landscape)
+                        </h3>
+                    </div>
+                    <p class="text-xs text-slate-500 mb-4">顏色越亮代表效率越高。十字標記為目前位置。</p>
+                    <!-- Plotly uses its own container -->
+                    <div id="contourPlot" class="w-full h-[350px] border border-slate-100 rounded-lg overflow-hidden"></div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <footer class="mt-12 py-8 bg-slate-900 text-slate-400 text-center text-xs">
+        <p class="mb-2">© 2023 Precision Photonics Educational Tools</p>
+        <p>Uses Gaussian Beam Approximation for SMF-28 Coupling Simulation.</p>
+    </footer>
+
+    <!-- JavaScript Logic -->
+    <script>
+        // Use an IIFE or window.onload to ensure DOM is ready before accessing elements
+        window.addEventListener('load', function() {
+            console.log("System Initializing...");
+            
+            // --- 1. DOM Elements (Safe to access now) ---
+            const els = {
+                status: document.getElementById('systemStatus'),
+                inputs: {
+                    x: document.getElementById('xInput'),
+                    y: document.getElementById('yInput'),
+                    z: document.getElementById('zInput'),
+                    tx: document.getElementById('txInput'),
+                    ty: document.getElementById('tyInput')
+                },
+                vals: {
+                    x: document.getElementById('xVal'),
+                    y: document.getElementById('yVal'),
+                    z: document.getElementById('zVal'),
+                    tx: document.getElementById('txVal'),
+                    ty: document.getElementById('tyVal')
+                },
+                results: {
+                    eff: document.getElementById('effDisplay'),
+                    loss: document.getElementById('lossDisplay'),
+                    bar: document.getElementById('efficiencyBar'),
+                    feedback: document.getElementById('feedbackText')
+                },
+                btn: {
+                    reset: document.getElementById('resetBtn')
+                },
+                canvas: document.getElementById('beamCanvas')
+            };
+
+            // --- 2. State & Physics Constants ---
+            const state = { x: 0, y: 0, z: 0, tx: 0, ty: 0 };
+            
+            // SMF-28 specs @ 1550nm
+            const LAMBDA = 1.55; // micron
+            const W0 = 5.2; // Mode field radius (MFD/2)
+            const n = 1.0; // Refractive index of gap (air)
+            const k = (2 * Math.PI * n) / LAMBDA;
+            // Rayleigh range
+            const zR = (Math.PI * W0 * W0) / LAMBDA;
+
+            // --- 3. Physics Engine (Robust) ---
+            function calculateCoupling(dx, dy, dz, theta_x_deg, theta_y_deg) {
+                // Convert deg to rad
+                const tx = theta_x_deg * (Math.PI / 180);
+                const ty = theta_y_deg * (Math.PI / 180);
+
+                // 1. Beam Expansion (Longitudinal Mismatch)
+                // Spot size at distance z: w(z) = w0 * sqrt(1 + (z/zR)^2)
+                // For coupling between identical fibers separated by dz:
+                // The receiving fiber expects w0. The incoming beam has w(dz) and radius of curvature R(dz).
+                // Using the overlap integral formula for Gaussian beams:
+                
+                // Normalized separation
+                const D = dz / zR;
+                
+                // Efficiency due to axial separation alone (assuming ideal alignment otherwise)
+                // eta_z = 4 / (4 + D^2)
+                const eta_z = 4 / (4 + (D * D));
+
+                // 2. Lateral Misalignment (taking beam expansion into account)
+                // The effective spot size for lateral tolerance increases with z
+                // Simplified rigorous approximation:
+                // eta_lat = exp( -2 * (x^2 + y^2) / (w1^2 + w2^2) ) ... where w2 is expanded?
+                // Actually, standard formula combining all:
+                // eta = kappa * exp( -kappa * (r^2/w0^2) - kappa * (pi*w0/lambda)^2 * theta^2 )
+                // where kappa = 4 / (4 + D^2)
+                
+                const r_sq = (dx*dx) + (dy*dy);
+                const theta_sq = (tx*tx) + (ty*ty);
+                
+                // Normalization factors
+                // Lateral term: r^2 / w0^2
+                const lat_term = r_sq / (W0 * W0);
+                
+                // Angular term: (pi * n * w0 * theta / lambda)^2
+                // Note: pi * w0 / lambda is basically sqrt(zR * pi / lambda)? No. 
+                // Let's use: (k * w0 * theta / 2)^2 * 4 ?
+                // Standard: (pi * w0 / lambda)^2 * theta^2
+                const ang_coeff = Math.pow((Math.PI * n * W0) / LAMBDA, 2);
+                const ang_term = ang_coeff * theta_sq;
+
+                // Combine
+                // Efficiency = kappa * exp( -kappa * (lat_term + ang_term) )
+                // Note: This assumes beam waist is at fiber face.
+                
+                const exponent = -eta_z * (lat_term + ang_term);
+                const efficiency = eta_z * Math.exp(exponent);
+
+                return Math.max(0, Math.min(1, efficiency));
+            }
+
+            function getLoss(eff) {
+                if (eff <= 0.0001) return "> 40.0";
+                return (-10 * Math.log10(eff)).toFixed(2);
+            }
+
+            // --- 4. Visualization Managers ---
+            
+            // A. Canvas Beam Visualizer
+            const ctx = els.canvas.getContext('2d');
+            
+            function drawBeam() {
+                const w = els.canvas.width;
+                const h = els.canvas.height;
+                const cx = w / 2;
+                const cy = h / 2;
+                
+                // Scale factor: how many pixels per micron
+                const scale = 8; 
+
+                ctx.clearRect(0, 0, w, h);
+
+                // Grid lines (subtle)
+                ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.moveTo(cx, 0); ctx.lineTo(cx, h);
+                ctx.moveTo(0, cy); ctx.lineTo(w, cy);
+                ctx.stroke();
+
+                // 1. Fixed Fiber (Target) - Blue Ring
+                ctx.beginPath();
+                ctx.arc(cx, cy, W0 * scale, 0, Math.PI * 2);
+                ctx.strokeStyle = '#3b82f6';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                ctx.fillStyle = 'rgba(59, 130, 246, 0.1)';
+                ctx.fill();
+
+                // 2. Moving Fiber (Source) - Red Blob
+                // Position depends on X, Y inputs. 
+                // Note: In canvas, Y increases downwards. Graph Y increases upwards.
+                const mx = cx + (state.x * scale);
+                const my = cy - (state.y * scale); 
+
+                // Size depends on Z (Beam expansion)
+                // w(z) = w0 * sqrt(1 + (z/zR)^2)
+                const wz = W0 * Math.sqrt(1 + Math.pow(state.z/zR, 2));
+                const visualRadius = wz * scale;
+
+                // Opacity fades with Z to simulate divergence/loss of intensity density
+                const intensity = Math.max(0.2, 1 / (1 + state.z/50)); 
+
+                ctx.beginPath();
+                ctx.arc(mx, my, visualRadius, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(239, 68, 68, ${intensity * 0.5})`;
+                ctx.fill();
+                ctx.strokeStyle = `rgba(239, 68, 68, ${intensity})`;
+                ctx.lineWidth = 2;
+                ctx.stroke();
+
+                // 3. Center Crosshairs for Moving Beam
+                ctx.beginPath();
+                const ch = 4;
+                ctx.moveTo(mx - ch, my); ctx.lineTo(mx + ch, my);
+                ctx.moveTo(mx, my - ch); ctx.lineTo(mx, my + ch);
+                ctx.strokeStyle = '#fff';
+                ctx.lineWidth = 1;
+                ctx.stroke();
+
+                // 4. Tilt Indicator (Arrow)
+                // If there is significant tilt, draw an arrow originating from moving center
+                const tiltMag = Math.sqrt(state.tx*state.tx + state.ty*state.ty);
+                if (tiltMag > 0.2) {
+                    // Projection: Ty tilts around Y axis -> moves X direction visually? 
+                    // Actually, tilt defines propagation angle.
+                    // Let's visualize the "direction" the beam is pointing "away" from center.
+                    // +Tx = tilt up/down? Let's map arbitrarily for visual aid: 
+                    // Vector (Ty, -Tx)
+                    const arrowLen = 25;
+                    const endX = mx + (state.ty * 10);
+                    const endY = my - (state.tx * 10);
+                    
+                    ctx.beginPath();
+                    ctx.moveTo(mx, my);
+                    ctx.lineTo(endX, endY);
+                    ctx.strokeStyle = '#d8b4fe'; // Purple
+                    ctx.lineWidth = 2;
+                    ctx.setLineDash([2, 2]);
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+                    
+                    // Arrowhead
+                    ctx.beginPath();
+                    ctx.arc(endX, endY, 2, 0, Math.PI*2);
+                    ctx.fillStyle = '#d8b4fe';
+                    ctx.fill();
+                }
+            }
+
+            // B. Chart.js Sensitivity
+            let sensChart = null;
+            function initSensChart() {
+                const ctxS = document.getElementById('sensitivityChart');
+                if(!ctxS) return;
+                
+                sensChart = new Chart(ctxS, {
+                    type: 'line',
+                    data: {
+                        labels: [],
+                        datasets: [
+                            {
+                                label: 'Efficiency Profile (varying X)',
+                                data: [],
+                                borderColor: '#3b82f6',
+                                borderWidth: 2,
+                                tension: 0.4,
+                                pointRadius: 0,
+                                fill: true,
+                                backgroundColor: 'rgba(59, 130, 246, 0.05)'
+                            },
+                            {
+                                label: 'Current Position',
+                                data: [],
+                                borderColor: '#ef4444',
+                                backgroundColor: '#ef4444',
+                                pointRadius: 6,
+                                pointHoverRadius: 8,
+                                showLine: false
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        interaction: { intersect: false, mode: 'index' },
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return 'Eff: ' + (context.parsed.y * 100).toFixed(1) + '%';
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                type: 'linear',
+                                title: { display: true, text: 'X Offset (μm)' },
+                                min: -15, max: 15,
+                                grid: { color: '#f1f5f9' }
+                            },
+                            y: {
+                                min: 0, max: 1.1,
+                                title: { display: true, text: 'Efficiency' },
+                                ticks: { format: { style: 'percent' } },
+                                grid: { color: '#f1f5f9' }
+                            }
+                        }
+                    }
+                });
+            }
+
+            function updateSensChart() {
+                if(!sensChart) return;
+                
+                // Calculate curve: Sweep X from -15 to 15, keeping other vars constant
+                const dataPoints = [];
+                for(let i = -15; i <= 15; i+=0.5) {
+                    const eff = calculateCoupling(i, state.y, state.z, state.tx, state.ty);
+                    dataPoints.push({x: i, y: eff});
+                }
+                
+                // Current point
+                const currEff = calculateCoupling(state.x, state.y, state.z, state.tx, state.ty);
+
+                sensChart.data.datasets[0].data = dataPoints;
+                sensChart.data.datasets[1].data = [{x: state.x, y: currEff}];
+                sensChart.update('none'); // Efficient update
+            }
+
+            // C. Plotly Heatmap
+            let plotlyLoaded = false;
+            
+            function initPlotly() {
+                const container = document.getElementById('contourPlot');
+                if(!container || typeof Plotly === 'undefined') {
+                    console.warn("Plotly not loaded or container missing");
+                    return;
+                }
+
+                // Initial dummy data
+                const data = [{
+                    z: [[0,0],[0,0]],
+                    type: 'contour',
+                    colorscale: 'Viridis'
+                }];
+                
+                const layout = {
+                    margin: { l: 40, r: 20, b: 40, t: 20 },
+                    xaxis: { title: 'X (μm)', range: [-15, 15] },
+                    yaxis: { title: 'Y (μm)', range: [-15, 15] },
+                    autosize: true
+                };
+                
+                Plotly.newPlot('contourPlot', data, layout, {displayModeBar: false, responsive: true})
+                .then(() => { plotlyLoaded = true; updatePlotly(); });
+            }
+
+            function updatePlotly() {
+                if(!plotlyLoaded) return;
+                
+                // Generate 21x21 grid
+                const size = 25;
+                const limit = 15;
+                const step = (limit*2) / (size-1);
+                
+                const xArr = [];
+                const yArr = [];
+                const zArr = [];
+
+                for(let i=0; i<size; i++) {
+                    const y = -limit + (i*step);
+                    yArr.push(y);
+                    const row = [];
+                    for(let j=0; j<size; j++) {
+                        const x = -limit + (j*step);
+                        if(i===0) xArr.push(x);
+                        // Efficiency at (x, y) with current Z/Tilt
+                        row.push(calculateCoupling(x, y, state.z, state.tx, state.ty));
+                    }
+                    zArr.push(row);
+                }
+
+                // Add marker for current pos
+                const update = {
+                    z: [zArr],
+                    x: [xArr],
+                    y: [yArr]
+                };
+                
+                // We recreate the trace logic for the marker since 'react' replaces data
+                // Trace 0: Contour, Trace 1: Marker
+                const contourTrace = {
+                    type: 'contour',
+                    z: zArr,
+                    x: xArr,
+                    y: yArr,
+                    colorscale: [
+                        [0, '#0f172a'], 
+                        [0.5, '#3b82f6'], 
+                        [1, '#ffffff']
+                    ],
+                    contours: { coloring: 'heatmap', showlabels: false },
+                    showscale: false
+                };
+                
+                const markerTrace = {
+                    type: 'scatter',
+                    mode: 'markers',
+                    x: [state.x],
+                    y: [state.y],
+                    marker: { color: 'red', size: 10, symbol: 'cross', line: {color:'white', width:1} }
+                };
+
+                const layout = {
+                    margin: { l: 40, r: 20, b: 40, t: 20 },
+                    xaxis: { title: 'X (μm)', range: [-15, 15] },
+                    yaxis: { title: 'Y (μm)', range: [-15, 15] },
+                    autosize: true,
+                    showlegend: false
+                };
+
+                Plotly.react('contourPlot', [contourTrace, markerTrace], layout);
+            }
+
+
+            // --- 5. Master Update ---
+            function updateUI() {
+                // Update Numeric Displays
+                els.vals.x.textContent = state.x.toFixed(1) + " μm";
+                els.vals.y.textContent = state.y.toFixed(1) + " μm";
+                els.vals.z.textContent = state.z.toFixed(0) + " μm";
+                els.vals.tx.textContent = state.tx.toFixed(1) + "°";
+                els.vals.ty.textContent = state.ty.toFixed(1) + "°";
+
+                // Calculate main result
+                const eff = calculateCoupling(state.x, state.y, state.z, state.tx, state.ty);
+                const db = getLoss(eff);
+                const pct = (eff * 100).toFixed(1);
+
+                els.results.eff.textContent = pct + "%";
+                els.results.loss.textContent = db + " dB";
+                els.results.bar.style.width = pct + "%";
+
+                // Color coding
+                let barColor = "bg-red-500";
+                let statusText = "";
+                let statusClass = "text-red-600";
+                
+                if(eff > 0.9) {
+                    barColor = "bg-green-500";
+                    statusText = "Excellent Alignment! (優良)";
+                    statusClass = "text-green-600 font-bold";
+                } else if(eff > 0.5) {
+                    barColor = "bg-blue-500";
+                    statusText = "Good Signal. Optimize axes. (尚可)";
+                    statusClass = "text-blue-600 font-medium";
+                } else if(eff > 0.1) {
+                    barColor = "bg-yellow-500";
+                    statusText = "Weak Signal. Check Z or large offsets. (微弱)";
+                    statusClass = "text-yellow-600";
+                } else {
+                    statusText = "No Signal / High Loss (無訊號)";
+                }
+
+                els.results.bar.className = `absolute top-0 left-0 h-full transition-all duration-300 ease-out ${barColor}`;
+                els.results.feedback.textContent = statusText;
+                els.results.feedback.className = `mt-4 p-2 rounded bg-slate-50 text-xs text-center border border-slate-100 ${statusClass}`;
+
+                // Update Viz
+                drawBeam();
+                updateSensChart();
+                updatePlotly();
+            }
+
+            // --- 6. Event Listeners ---
+            function bindEvents() {
+                ['x', 'y', 'z', 'tx', 'ty'].forEach(key => {
+                    els.inputs[key].addEventListener('input', (e) => {
+                        state[key] = parseFloat(e.target.value);
+                        updateUI();
+                    });
+                });
+
+                els.btn.reset.addEventListener('click', () => {
+                    state.x = 0; state.y = 0; state.z = 0; state.tx = 0; state.ty = 0;
+                    // Reset sliders
+                    Object.keys(els.inputs).forEach(k => els.inputs[k].value = 0);
+                    updateUI();
+                });
+
+                window.addEventListener('resize', () => {
+                    if(sensChart) sensChart.resize();
+                    if(plotlyLoaded) Plotly.Plots.resize('contourPlot');
+                });
+            }
+
+            // --- 7. Ignite ---
+            initSensChart();
+            initPlotly();
+            bindEvents();
+            updateUI();
+            
+            els.status.textContent = "System Ready";
+            els.status.className = "inline-flex items-center rounded-md bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20";
+        });
+    </script>
+</body>
+</html>
