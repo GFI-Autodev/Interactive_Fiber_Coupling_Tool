@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Advanced Coupling Simulator | DiCon Fiberoptics</title>
+    <title>Advanced Fiber Coupling Simulator v5 | DiCon Fiberoptics</title>
     
     <!-- 1. Load Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -60,7 +60,13 @@
             </div>
             
             <div class="mt-4 md:mt-0 text-right flex items-center gap-3">
-                <span class="hidden md:inline text-xs text-slate-400">Advanced Simulation Tool v3.0</span>
+                <!-- Language Toggle -->
+                <button id="langToggle" class="flex items-center gap-2 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg transition-colors border border-slate-200 text-xs font-bold">
+                    <span class="text-lg">🌐</span>
+                    <span id="langLabel">EN / 中文</span>
+                </button>
+
+                <span class="hidden md:inline text-xs text-slate-400">v5.0</span>
                 <span id="systemStatus" class="inline-flex items-center rounded-md bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20">
                     System Ready
                 </span>
@@ -72,8 +78,8 @@
         
         <!-- Intro -->
         <section class="mb-8 max-w-5xl mx-auto text-center">
-            <h2 class="text-3xl font-bold mb-3 text-slate-800">Fiber-to-Fiber Coupling & Alignment Physics</h2>
-            <p class="text-slate-600 text-sm md:text-base max-w-3xl mx-auto leading-relaxed">
+            <h2 class="text-3xl font-bold mb-3 text-slate-800" data-i18n="intro_title">Fiber-to-Fiber Coupling & Alignment Physics</h2>
+            <p class="text-slate-600 text-sm md:text-base max-w-3xl mx-auto leading-relaxed" data-i18n="intro_desc">
                 Visualize the impact of 5-axis misalignment (X, Y, Z, Tilt X, Tilt Y) on coupling efficiency.
                 Configure fiber parameters below to simulate different setups, demonstrating <strong class="text-blue-900">DiCon's expertise in high-precision free-space optics</strong>.
             </p>
@@ -87,17 +93,17 @@
                 <!-- Result Display -->
                 <div class="bg-white rounded-xl shadow-lg overflow-hidden border border-slate-100 ring-1 ring-slate-900/5">
                     <div class="bg-blue-900 px-6 py-4 flex justify-between items-center">
-                        <h3 class="text-white font-semibold text-sm tracking-wide">REAL-TIME METRICS</h3>
+                        <h3 class="text-white font-semibold text-sm tracking-wide" data-i18n="metrics_title">REAL-TIME METRICS</h3>
                         <span id="lambdaDisplay" class="text-blue-200 text-xs font-mono">λ = 1550 nm</span>
                     </div>
                     <div class="p-6 text-center">
                         <div class="grid grid-cols-2 gap-4 mb-4">
                             <div class="bg-slate-50 p-3 rounded-lg border border-slate-100 shadow-sm">
-                                <span class="block text-[10px] text-slate-400 uppercase font-bold tracking-wider mb-1">Coupling Efficiency</span>
+                                <span class="block text-[10px] text-slate-400 uppercase font-bold tracking-wider mb-1" data-i18n="lbl_eff">Coupling Efficiency</span>
                                 <span id="effDisplay" class="text-3xl font-bold text-blue-700 font-mono">--%</span>
                             </div>
                             <div class="bg-slate-50 p-3 rounded-lg border border-slate-100 shadow-sm">
-                                <span class="block text-[10px] text-slate-400 uppercase font-bold tracking-wider mb-1">Insertion Loss (IL)</span>
+                                <span class="block text-[10px] text-slate-400 uppercase font-bold tracking-wider mb-1" data-i18n="lbl_loss">Insertion Loss (IL)</span>
                                 <span id="lossDisplay" class="text-3xl font-bold text-red-600 font-mono">-- dB</span>
                             </div>
                         </div>
@@ -111,49 +117,64 @@
                     </div>
                 </div>
 
-                <!-- NEW: Fiber Parameters Configuration -->
+                <!-- Dual Fiber Configuration -->
                 <div class="bg-slate-100 rounded-xl p-5 border border-slate-200 shadow-inner">
-                    <h3 class="text-sm font-bold text-blue-900 mb-4 flex items-center gap-2">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                        Fiber Parameters Configuration
-                    </h3>
-                    <div class="space-y-4">
-                        <div>
-                            <label class="block text-xs font-bold text-slate-700 mb-1">Fiber Type Preset</label>
-                            <select id="fiberPreset" class="w-full text-sm bg-white border border-slate-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                <option value="smf28">Corning SMF-28 (Standard Telecom)</option>
-                                <option value="hi1060">Corning HI 1060 (Short Wavelength)</option>
-                                <option value="custom">Custom Specification</option>
-                            </select>
-                        </div>
-                        <div class="grid grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-xs font-bold text-slate-700 mb-1">Wavelength (nm)</label>
-                                <input type="number" id="lambdaInput" min="400" max="2000" step="1" class="w-full text-sm bg-white border border-slate-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-bold text-slate-700 mb-1">MFD (μm)</label>
-                                <input type="number" id="mfdInput" min="1" max="20" step="0.1" class="w-full text-sm bg-white border border-slate-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono">
-                            </div>
-                        </div>
-                        <div>
-                             <label class="block text-xs font-bold text-slate-500 mb-1">Approx. Numerical Aperture (NA)</label>
-                             <div id="naDisplay" class="w-full text-sm bg-slate-200 border border-slate-300 rounded-md px-3 py-2 font-mono text-slate-600">
-                                 --
-                             </div>
-                             <p class="text-[10px] text-slate-400 mt-1">*NA is derived from MFD and Wavelength using Gaussian approximation (2λ / π·MFD).</p>
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-sm font-bold text-blue-900 flex items-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path></svg>
+                            <span data-i18n="fiber_specs_title">Fiber Specifications</span>
+                        </h3>
+                        <div class="flex items-center gap-2">
+                            <label class="text-[10px] font-bold text-slate-500" data-i18n="lbl_sys_lambda">System λ:</label>
+                            <input type="number" id="systemLambda" min="400" max="2500" value="1550" class="w-16 text-xs px-1 py-0.5 rounded border border-slate-300 text-center font-mono">
+                            <span class="text-[10px] text-slate-400">nm</span>
                         </div>
                     </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <!-- Input Fiber Column -->
+                        <div class="bg-white p-3 rounded-lg border border-red-100 shadow-sm relative overflow-hidden">
+                            <div class="absolute top-0 left-0 w-1 h-full bg-red-500"></div>
+                            <h4 class="text-xs font-bold text-red-600 mb-2 pl-2" data-i18n="fiber_in_title">Input (Source)</h4>
+                            
+                            <label class="block text-[10px] text-slate-500 mb-1" data-i18n="lbl_preset">Preset</label>
+                            <select id="fiberPresetIn" class="w-full text-xs bg-slate-50 border border-slate-200 rounded mb-2 px-1 py-1">
+                                <option value="smf28">SMF-28 (10.4µm)</option>
+                                <option value="hi1060">HI 1060 (6.2µm)</option>
+                                <option value="custom" data-i18n="opt_custom">Custom</option>
+                            </select>
+
+                            <label class="block text-[10px] text-slate-500 mb-1">MFD (µm)</label>
+                            <input type="number" id="mfdInputIn" step="0.1" class="w-full text-sm font-mono border border-slate-200 rounded px-2 py-1 text-slate-700">
+                        </div>
+
+                        <!-- Output Fiber Column -->
+                        <div class="bg-white p-3 rounded-lg border border-blue-100 shadow-sm relative overflow-hidden">
+                            <div class="absolute top-0 right-0 w-1 h-full bg-blue-500"></div>
+                            <h4 class="text-xs font-bold text-blue-600 mb-2 text-right pr-2" data-i18n="fiber_out_title">Output (Receiver)</h4>
+                            
+                            <label class="block text-[10px] text-slate-500 mb-1 text-right" data-i18n="lbl_preset">Preset</label>
+                            <select id="fiberPresetOut" class="w-full text-xs bg-slate-50 border border-slate-200 rounded mb-2 px-1 py-1 text-right" dir="rtl">
+                                <option value="smf28">SMF-28 (10.4µm)</option>
+                                <option value="hi1060">HI 1060 (6.2µm)</option>
+                                <option value="custom" data-i18n="opt_custom">Custom</option>
+                            </select>
+
+                            <label class="block text-[10px] text-slate-500 mb-1 text-right">MFD (µm)</label>
+                            <input type="number" id="mfdInputOut" step="0.1" class="w-full text-sm font-mono border border-slate-200 rounded px-2 py-1 text-slate-700 text-right">
+                        </div>
+                    </div>
+                    <p class="text-[10px] text-slate-400 mt-2 text-center italic" data-i18n="mismatch_note">Mismatch in MFD causes intrinsic coupling loss.</p>
                 </div>
 
                 <!-- Alignment Controls -->
                 <div class="bg-white rounded-xl shadow-lg p-6 border border-slate-100">
                     <div class="flex items-center justify-between mb-6">
-                        <h3 class="text-base font-bold text-slate-800 flex items-center gap-2">
-                            Alignment Controls
+                        <h3 class="text-base font-bold text-slate-800 flex items-center gap-2" data-i18n="align_title">
+                            5-Axis Alignment
                         </h3>
-                        <button id="resetBtn" class="text-xs text-blue-600 hover:text-white hover:bg-blue-600 font-medium px-3 py-1 bg-blue-50 rounded-full transition-all duration-200">
-                            Reset Alignment
+                        <button id="resetBtn" class="text-xs text-blue-600 hover:text-white hover:bg-blue-600 font-medium px-3 py-1 bg-blue-50 rounded-full transition-all duration-200" data-i18n="btn_reset">
+                            Reset Position
                         </button>
                     </div>
                     
@@ -162,11 +183,12 @@
                         <div class="relative group">
                             <div class="flex justify-between mb-2">
                                 <label for="zInput" class="text-sm font-bold text-slate-700 flex items-center">
-                                    <span class="w-2 h-2 rounded-full bg-slate-400 mr-2 group-hover:bg-blue-500 transition-colors"></span>Z: Axial Gap
+                                    <span class="w-2 h-2 rounded-full bg-slate-400 mr-2 group-hover:bg-blue-500 transition-colors"></span>
+                                    <span data-i18n="lbl_z">Z: Axial Gap</span>
                                 </label>
                                 <span id="zVal" class="text-xs font-mono bg-slate-100 px-2 py-0.5 rounded text-slate-600 border border-slate-200">0 μm</span>
                             </div>
-                            <input type="range" id="zInput" min="0" max="250" step="1" value="0" 
+                            <input type="range" id="zInput" min="0" max="300" step="1" value="0" 
                                 class="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:bg-slate-500 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:shadow-md hover:[&::-webkit-slider-thumb]:bg-blue-600 hover:[&::-webkit-slider-thumb]:scale-110 transition-all">
                         </div>
 
@@ -175,7 +197,8 @@
                             <div class="relative group">
                                 <div class="flex justify-between mb-2">
                                     <label for="xInput" class="text-sm font-bold text-slate-700 flex items-center">
-                                        <span class="w-2 h-2 rounded-full bg-red-500 mr-1.5"></span>Offset X
+                                        <span class="w-2 h-2 rounded-full bg-red-500 mr-1.5"></span>
+                                        <span data-i18n="lbl_x">Offset X</span>
                                     </label>
                                     <span id="xVal" class="text-[10px] font-mono bg-red-50 px-1.5 py-0.5 rounded text-red-600 border border-red-100">0.0</span>
                                 </div>
@@ -187,7 +210,8 @@
                             <div class="relative group">
                                 <div class="flex justify-between mb-2">
                                     <label for="yInput" class="text-sm font-bold text-slate-700 flex items-center">
-                                        <span class="w-2 h-2 rounded-full bg-red-500 mr-1.5"></span>Offset Y
+                                        <span class="w-2 h-2 rounded-full bg-red-500 mr-1.5"></span>
+                                        <span data-i18n="lbl_y">Offset Y</span>
                                     </label>
                                     <span id="yVal" class="text-[10px] font-mono bg-red-50 px-1.5 py-0.5 rounded text-red-600 border border-red-100">0.0</span>
                                 </div>
@@ -199,7 +223,8 @@
                             <div class="relative group">
                                 <div class="flex justify-between mb-2">
                                     <label for="txInput" class="text-sm font-bold text-slate-700 flex items-center">
-                                        <span class="w-2 h-2 rounded-full bg-purple-500 mr-1.5"></span>Tilt X
+                                        <span class="w-2 h-2 rounded-full bg-purple-500 mr-1.5"></span>
+                                        <span data-i18n="lbl_tx">Tilt X</span>
                                     </label>
                                     <span id="txVal" class="text-[10px] font-mono bg-purple-50 px-1.5 py-0.5 rounded text-purple-600 border border-purple-100">0.0°</span>
                                 </div>
@@ -211,7 +236,8 @@
                             <div class="relative group">
                                 <div class="flex justify-between mb-2">
                                     <label for="tyInput" class="text-sm font-bold text-slate-700 flex items-center">
-                                        <span class="w-2 h-2 rounded-full bg-purple-500 mr-1.5"></span>Tilt Y
+                                        <span class="w-2 h-2 rounded-full bg-purple-500 mr-1.5"></span>
+                                        <span data-i18n="lbl_ty">Tilt Y</span>
                                     </label>
                                     <span id="tyVal" class="text-[10px] font-mono bg-purple-50 px-1.5 py-0.5 rounded text-purple-600 border border-purple-100">0.0°</span>
                                 </div>
@@ -231,21 +257,21 @@
                     <div class="flex justify-between items-center mb-4">
                         <h3 class="text-base font-bold text-slate-800 flex items-center gap-2">
                             <span class="flex items-center justify-center w-6 h-6 rounded bg-blue-100 text-blue-700 text-xs font-bold">1</span>
-                            Fiber Alignment Visualization (Top & Side Views)
+                            <span data-i18n="viz1_title">Fiber Alignment Visualization (Top & Side Views)</span>
                         </h3>
                     </div>
                     
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <!-- Top View -->
                         <div class="flex flex-col items-center">
-                            <span class="text-xs font-bold text-slate-500 mb-2">Top View (Beam Overlap)</span>
+                            <span class="text-xs font-bold text-slate-500 mb-2" data-i18n="viz_top_label">Top View (Beam Overlap)</span>
                             <div class="bg-slate-50 rounded-lg py-4 border border-slate-100 shadow-inner w-full flex justify-center">
                                 <canvas id="beamCanvasTop" width="280" height="280" class="viz-canvas"></canvas>
                             </div>
                         </div>
                         <!-- Side View -->
                         <div class="flex flex-col items-center">
-                            <span class="text-xs font-bold text-slate-500 mb-2">Side View (Z-Gap & Tilt)</span>
+                            <span class="text-xs font-bold text-slate-500 mb-2" data-i18n="viz_side_label">Side View (Z-Gap & Tilt)</span>
                             <div class="bg-slate-50 rounded-lg py-4 border border-slate-100 shadow-inner w-full flex justify-center items-center" style="height: 312px;">
                                 <canvas id="beamCanvasSide" width="320" height="200" class="viz-canvas"></canvas>
                             </div>
@@ -254,10 +280,12 @@
 
                     <div class="mt-4 flex justify-center gap-6 text-xs text-slate-500">
                         <div class="flex items-center gap-2">
-                            <span class="w-3 h-3 rounded-full bg-blue-500 ring-2 ring-blue-200"></span> Fixed Fiber (Left)
+                            <span class="w-3 h-3 rounded-full bg-blue-500 ring-2 ring-blue-200"></span>
+                            <span data-i18n="legend_fixed">Fixed (Receiver)</span>
                         </div>
                         <div class="flex items-center gap-2">
-                            <span class="w-3 h-3 rounded-full bg-red-500 ring-2 ring-red-200"></span> Moving Fiber (Right)
+                            <span class="w-3 h-3 rounded-full bg-red-500 ring-2 ring-red-200"></span>
+                            <span data-i18n="legend_moving">Moving (Source)</span>
                         </div>
                     </div>
                 </div>
@@ -267,10 +295,10 @@
                     <div class="flex justify-between items-center mb-2">
                         <h3 class="text-base font-bold text-slate-800 flex items-center gap-2">
                             <span class="flex items-center justify-center w-6 h-6 rounded bg-blue-100 text-blue-700 text-xs font-bold">2</span>
-                            Alignment Sensitivity Profile (X-Axis)
+                            <span data-i18n="viz2_title">Alignment Sensitivity Profile (X-Axis)</span>
                         </h3>
                     </div>
-                    <p class="text-xs text-slate-500 mb-4">Efficiency drop-off curve for lateral misalignment at current Z/Tilt and Fiber Specs.</p>
+                    <p class="text-xs text-slate-500 mb-4" data-i18n="viz2_desc">Sensitivity curve showing the impact of lateral offset on coupling efficiency.</p>
                     <div class="chart-container">
                         <canvas id="sensitivityChart"></canvas>
                     </div>
@@ -281,10 +309,10 @@
                     <div class="flex justify-between items-center mb-2">
                         <h3 class="text-base font-bold text-slate-800 flex items-center gap-2">
                             <span class="flex items-center justify-center w-6 h-6 rounded bg-blue-100 text-blue-700 text-xs font-bold">3</span>
-                            2D Coupling Landscape (Heatmap)
+                            <span data-i18n="viz3_title">2D Coupling Landscape (Heatmap)</span>
                         </h3>
                     </div>
-                    <p class="text-xs text-slate-500 mb-4">Brighter regions indicate "Sweet Spot" for optimal coupling.</p>
+                    <p class="text-xs text-slate-500 mb-4" data-i18n="viz3_desc">Brighter regions indicate "Sweet Spot" for optimal coupling.</p>
                     <!-- Plotly uses its own container -->
                     <div id="contourPlot" class="w-full h-[350px] border border-slate-100 rounded-lg overflow-hidden shadow-inner"></div>
                 </div>
@@ -306,17 +334,126 @@
     <!-- JavaScript Logic -->
     <script>
         window.addEventListener('load', function() {
-            console.log("DiCon Advanced System Initializing...");
+            console.log("DiCon Advanced System v5 Initializing...");
             
+            // --- 0. Translations ---
+            const i18n = {
+                en: {
+                    intro_title: "Fiber-to-Fiber Coupling & Alignment Physics",
+                    intro_desc: "Visualize the impact of 5-axis misalignment (X, Y, Z, Tilt X, Tilt Y) on coupling efficiency. Configure fiber parameters below to simulate different setups, demonstrating DiCon's expertise in high-precision free-space optics.",
+                    metrics_title: "REAL-TIME METRICS",
+                    lbl_eff: "Coupling Efficiency",
+                    lbl_loss: "Insertion Loss (IL)",
+                    fiber_specs_title: "Fiber Specifications",
+                    lbl_sys_lambda: "System λ:",
+                    fiber_in_title: "Input (Source)",
+                    fiber_out_title: "Output (Receiver)",
+                    lbl_preset: "Preset",
+                    opt_custom: "Custom",
+                    mismatch_note: "Mismatch in MFD causes intrinsic coupling loss.",
+                    align_title: "5-Axis Alignment",
+                    btn_reset: "Reset Position",
+                    lbl_z: "Z: Axial Gap",
+                    lbl_x: "Offset X",
+                    lbl_y: "Offset Y",
+                    lbl_tx: "Tilt X",
+                    lbl_ty: "Tilt Y",
+                    viz1_title: "Fiber Alignment Visualization (Top & Side Views)",
+                    viz_top_label: "Top View (Beam Overlap)",
+                    viz_side_label: "Side View (Z-Gap & Tilt)",
+                    legend_fixed: "Fixed (Receiver)",
+                    legend_moving: "Moving (Source)",
+                    viz2_title: "Alignment Sensitivity Profile (X-Axis)",
+                    viz2_desc: "Sensitivity curve showing the impact of lateral offset on coupling efficiency.",
+                    viz3_title: "2D Coupling Landscape (Heatmap)",
+                    viz3_desc: "Brighter regions indicate \"Sweet Spot\" for optimal coupling.",
+                    // Dynamic values
+                    status_excellent: "Excellent Alignment",
+                    status_acceptable: "Acceptable",
+                    status_weak: "Weak Signal",
+                    status_loss: "High Loss / Misaligned",
+                    chart_axis_x: "X Offset (μm)",
+                    chart_axis_y: "Efficiency"
+                },
+                zh: {
+                    intro_title: "光纖耦合物理與對位模擬 (Fiber Coupling Physics)",
+                    intro_desc: "調整 5 軸參數 (X, Y, Z, Tilt X, Tilt Y) 觀察對耦合效率的影響。透過下方光纖參數設定模擬不同場景，展示 DiCon 在高精密自由空間光學的核心技術。",
+                    metrics_title: "即時數據監控",
+                    lbl_eff: "耦合效率 (Efficiency)",
+                    lbl_loss: "插入損耗 (Insertion Loss)",
+                    fiber_specs_title: "光纖規格設定 (Fiber Specs)",
+                    lbl_sys_lambda: "系統波長 λ:",
+                    fiber_in_title: "輸入端 (Source)",
+                    fiber_out_title: "輸出端 (Receiver)",
+                    lbl_preset: "預設型號",
+                    opt_custom: "自訂 (Custom)",
+                    mismatch_note: "注意：模態場直徑 (MFD) 不匹配將導致固有的耦合損耗。",
+                    align_title: "5 軸對位控制 (Alignment)",
+                    btn_reset: "重置位置",
+                    lbl_z: "Z 軸: 軸向間距",
+                    lbl_x: "X 軸: 橫向偏移",
+                    lbl_y: "Y 軸: 橫向偏移",
+                    lbl_tx: "Tx: X 軸傾角",
+                    lbl_ty: "Ty: Y 軸傾角",
+                    viz1_title: "光纖對位視圖 (上視圖 & 側視圖)",
+                    viz_top_label: "上視圖 (光斑重疊狀況)",
+                    viz_side_label: "側視圖 (Z 軸間距與傾角)",
+                    legend_fixed: "固定端 (接收)",
+                    legend_moving: "移動端 (光源)",
+                    viz2_title: "X 軸偏移敏感度曲線 (Sensitivity)",
+                    viz2_desc: "顯示橫向偏移對耦合效率的影響曲線 (高斯分佈)。",
+                    viz3_title: "2D 耦合效率熱圖 (Heatmap)",
+                    viz3_desc: "顏色越亮代表耦合效率越高的「甜蜜點 (Sweet Spot)」。",
+                    // Dynamic values
+                    status_excellent: "對位優良 (Excellent)",
+                    status_acceptable: "訊號尚可 (Acceptable)",
+                    status_weak: "訊號微弱 (Weak Signal)",
+                    status_loss: "嚴重損耗 / 未對準 (Misaligned)",
+                    chart_axis_x: "X 軸偏移 (μm)",
+                    chart_axis_y: "耦合效率"
+                }
+            };
+
+            let currentLang = 'en';
+
+            function updateLanguage(lang) {
+                currentLang = lang;
+                
+                // Update text content for static elements
+                document.querySelectorAll('[data-i18n]').forEach(el => {
+                    const key = el.getAttribute('data-i18n');
+                    if (i18n[lang][key]) {
+                        el.textContent = i18n[lang][key];
+                    }
+                });
+
+                // Trigger UI update to refresh dynamic text (status, charts)
+                updateUI();
+                // Update chart labels explicitly
+                if(sensChart) {
+                    sensChart.options.scales.x.title.text = i18n[lang].chart_axis_x;
+                    sensChart.options.scales.y.title.text = i18n[lang].chart_axis_y;
+                    sensChart.update();
+                }
+            }
+
+
             // --- 1. DOM Elements ---
             const els = {
                 status: document.getElementById('systemStatus'),
                 lambdaDisplay: document.getElementById('lambdaDisplay'),
-                naDisplay: document.getElementById('naDisplay'),
-                // Fiber Params
-                fiberPreset: document.getElementById('fiberPreset'),
-                lambdaInput: document.getElementById('lambdaInput'),
-                mfdInput: document.getElementById('mfdInput'),
+                
+                // Lang Toggle
+                langToggle: document.getElementById('langToggle'),
+                langLabel: document.getElementById('langLabel'),
+
+                // New Config Inputs
+                systemLambda: document.getElementById('systemLambda'),
+                fiberPresetIn: document.getElementById('fiberPresetIn'),
+                mfdInputIn: document.getElementById('mfdInputIn'),
+                fiberPresetOut: document.getElementById('fiberPresetOut'),
+                mfdInputOut: document.getElementById('mfdInputOut'),
+
                 // Alignment Inputs
                 inputs: {
                     x: document.getElementById('xInput'),
@@ -341,77 +478,88 @@
                     feedback: document.getElementById('feedbackText')
                 },
                 btn: { reset: document.getElementById('resetBtn') },
-                // Canvases
                 canvasTop: document.getElementById('beamCanvasTop'),
                 canvasSide: document.getElementById('beamCanvasSide')
             };
 
             // --- 2. State & Physics Constants ---
-            // Alignment State
             const state = { x: 0, y: 0, z: 0, tx: 0, ty: 0 };
             
-            // Fiber Parameter Presets dictionary
+            // Fiber Presets
             const fiberData = {
-                'smf28': { lambda: 1550, mfd: 10.4, name: "Corning SMF-28" },
-                'hi1060': { lambda: 1060, mfd: 6.2, name: "Corning HI 1060" },
-                // Add more presets here if needed
+                'smf28': { mfd: 10.4 },
+                'hi1060': { mfd: 6.2 },
+                'custom': { mfd: 10.4 } // default custom
             };
 
             // Current Physics Parameters (Dynamic)
             let physics = {
                 lambdaMicrons: 1.550,
-                w0: 5.2,   // MFD/2
-                k: 0,      // Wave number
-                zR: 0,     // Rayleigh range
-                naApprox: 0
+                w0_in: 5.2,  // Source waist (MFD/2)
+                w0_out: 5.2, // Receiver waist (MFD/2)
+                k: 0,
+                zR_in: 0     // Rayleigh range of input beam
             };
 
-            // Function to update physics constants based on inputs
+            // Function to update physics constants
             function updatePhysicsParams() {
-                // Read from inputs
-                let lambdaNm = parseFloat(els.lambdaInput.value) || 1550;
-                let mfdMicrons = parseFloat(els.mfdInput.value) || 10.4;
-
-                // Constrain inputs to reasonable physical limits to prevent crashes
+                // 1. Get System Wavelength
+                let lambdaNm = parseFloat(els.systemLambda.value) || 1550;
                 lambdaNm = Math.max(400, Math.min(2500, lambdaNm));
-                mfdMicrons = Math.max(1, Math.min(50, mfdMicrons));
-                
-                // Update Physics State
                 physics.lambdaMicrons = lambdaNm / 1000;
-                physics.w0 = mfdMicrons / 2;
-                const n = 1.0; // Refractive index of gap (air)
-                physics.k = (2 * Math.PI * n) / physics.lambdaMicrons;
-                physics.zR = (Math.PI * physics.w0 * physics.w0) / physics.lambdaMicrons;
 
-                // Calculate approximate NA for display: NA approx = 2 * lambda / (pi * MFD)
-                physics.naApprox = (2 * physics.lambdaMicrons) / (Math.PI * mfdMicrons);
+                // 2. Get Input MFD
+                let mfdInVal = parseFloat(els.mfdInputIn.value) || 10.4;
+                physics.w0_in = mfdInVal / 2;
 
-                // Update UI Displays for Params
+                // 3. Get Output MFD
+                let mfdOutVal = parseFloat(els.mfdInputOut.value) || 10.4;
+                physics.w0_out = mfdOutVal / 2;
+
+                // 4. Derived Constants
+                physics.k = (2 * Math.PI) / physics.lambdaMicrons; // n=1
+                // Rayleigh range depends on Source beam size
+                physics.zR_in = (Math.PI * physics.w0_in * physics.w0_in) / physics.lambdaMicrons;
+
+                // Update UI Display
                 els.lambdaDisplay.textContent = `λ = ${lambdaNm} nm`;
-                els.naDisplay.textContent = physics.naApprox.toFixed(3);
                 
                 console.log("Physics Updated:", physics);
             }
 
-            // --- 3. Physics Engine (Using Dynamic Parameters) ---
+            // --- 3. Physics Engine (General Gaussian Overlap) ---
             function calculateCoupling(dx, dy, dz, theta_x_deg, theta_y_deg) {
                 const tx = theta_x_deg * (Math.PI / 180);
                 const ty = theta_y_deg * (Math.PI / 180);
 
-                // 1. Longitudinal Mismatch (using dynamic zR)
-                const D = dz / physics.zR;
-                const eta_z = 4 / (4 + (D * D));
+                // 1. Propagate Source Beam (Beam 1) to Receiver Plane
+                const w1_z = physics.w0_in * Math.sqrt(1 + Math.pow(dz / physics.zR_in, 2));
+                const R1_z = (dz === 0) ? Infinity : dz * (1 + Math.pow(physics.zR_in / dz, 2));
 
-                // 2. Lateral & Angular Misalignment (using dynamic w0, lambda)
+                // Receiver Beam (Beam 2) parameters at plane
+                const w2 = physics.w0_out;
+
+                // 2. Axial & Mode Mismatch Efficiency (Kogelnik's Formula generalized)
+                const term_width = (w1_z / w2) + (w2 / w1_z);
+                let term_curv = 0;
+                if (R1_z !== Infinity) {
+                    term_curv = (Math.PI * w1_z * w2) / (physics.lambdaMicrons * R1_z);
+                }
+                const eta_mode_axial = 4 / (term_width * term_width + term_curv * term_curv);
+
+                // 3. Lateral Misalignment Factor
                 const r_sq = (dx*dx) + (dy*dy);
-                const theta_sq = (tx*tx) + (ty*ty);
-                
-                const lat_term = r_sq / (physics.w0 * physics.w0);
-                const ang_coeff = Math.pow((Math.PI * 1.0 * physics.w0) / physics.lambdaMicrons, 2);
-                const ang_term = ang_coeff * theta_sq;
+                const w_eff_sq = (w1_z * w1_z) + (w2 * w2);
+                const eta_lat = Math.exp((-2 * r_sq) / w_eff_sq);
 
-                const exponent = -eta_z * (lat_term + ang_term);
-                const efficiency = eta_z * Math.exp(exponent);
+                // 4. Angular Misalignment Factor
+                const theta_sq = (tx*tx) + (ty*ty);
+                const inv_w_sq_sum = (1 / (w1_z * w1_z)) + (1 / (w2 * w2));
+                const coeff_ang = (2 * Math.PI * Math.PI) / (physics.lambdaMicrons * physics.lambdaMicrons);
+                const eta_ang = Math.exp((-1 * coeff_ang * theta_sq) / inv_w_sq_sum);
+
+                // Total Efficiency
+                const efficiency = eta_mode_axial * eta_lat * eta_ang;
 
                 return Math.max(0, Math.min(1, efficiency));
             }
@@ -431,173 +579,128 @@
                 const h = els.canvasTop.height;
                 const cx = w / 2;
                 const cy = h / 2;
-                // Dynamic scale based on MFD so it fits nicely
-                const scale = 100 / (physics.w0 * 4); 
+                
+                const maxW = Math.max(physics.w0_in, physics.w0_out);
+                const scale = 100 / (maxW * 4); 
 
                 ctxTop.clearRect(0, 0, w, h);
-
                 // Grid
                 ctxTop.strokeStyle = 'rgba(255,255,255,0.05)';
                 ctxTop.lineWidth = 1;
                 ctxTop.beginPath(); ctxTop.moveTo(cx, 0); ctxTop.lineTo(cx, h); ctxTop.moveTo(0, cy); ctxTop.lineTo(w, cy); ctxTop.stroke();
 
-                // 1. Fixed Fiber (Target) - Blue Ring
+                // 1. Fixed Fiber (Receiver) - Blue Ring
                 ctxTop.beginPath();
-                ctxTop.arc(cx, cy, physics.w0 * scale, 0, Math.PI * 2);
+                ctxTop.arc(cx, cy, physics.w0_out * scale, 0, Math.PI * 2);
                 ctxTop.strokeStyle = '#3b82f6'; ctxTop.lineWidth = 2; ctxTop.stroke();
                 ctxTop.fillStyle = 'rgba(59, 130, 246, 0.1)'; ctxTop.fill();
 
                 // 2. Moving Fiber (Source) - Red Blob
                 const mx = cx + (state.x * scale);
                 const my = cy - (state.y * scale); 
-                // Beam Expansion at distance Z
-                const wz = physics.w0 * Math.sqrt(1 + Math.pow(state.z/physics.zR, 2));
+                const wz = physics.w0_in * Math.sqrt(1 + Math.pow(state.z/physics.zR_in, 2));
                 const visualRadius = wz * scale;
-                // Opacity fades with Z
-                const intensity = Math.max(0.2, 1 / (1 + state.z/(physics.zR*0.5))); 
+                const intensity = Math.max(0.2, 1 / (1 + state.z/(physics.zR_in*0.5))); 
 
                 ctxTop.beginPath();
                 ctxTop.arc(mx, my, visualRadius, 0, Math.PI * 2);
                 ctxTop.fillStyle = `rgba(239, 68, 68, ${intensity * 0.5})`; ctxTop.fill();
                 ctxTop.strokeStyle = `rgba(239, 68, 68, ${intensity})`; ctxTop.lineWidth = 2; ctxTop.stroke();
 
-                // Crosshairs & Tilt Arrow (as before)
+                // Crosshairs
                 ctxTop.beginPath(); const ch = 4; ctxTop.moveTo(mx-ch, my); ctxTop.lineTo(mx+ch, my); ctxTop.moveTo(mx, my-ch); ctxTop.lineTo(mx, my+ch);
                 ctxTop.strokeStyle = '#fff'; ctxTop.lineWidth = 1; ctxTop.stroke();
+                
+                // Tilt Arrow
                 const tiltMag = Math.sqrt(state.tx*state.tx + state.ty*state.ty);
                 if (tiltMag > 0.2) {
-                    const endX = mx + (state.ty * 10 * (1550/els.lambdaInput.value)); // Scale arrow length inverse to wavelength roughly
-                    const endY = my - (state.tx * 10 * (1550/els.lambdaInput.value));
+                    const endX = mx + (state.ty * 10);
+                    const endY = my - (state.tx * 10);
                     drawArrow(ctxTop, mx, my, endX, endY, '#d8b4fe');
                 }
             }
 
-            // Helper for arrows
             function drawArrow(ctx, fromX, fromY, toX, toY, color) {
-                const headlen = 8; 
-                const dx = toX - fromX;
-                const dy = toY - fromY;
-                const angle = Math.atan2(dy, dx);
-                ctx.beginPath();
-                ctx.moveTo(fromX, fromY); ctx.lineTo(toX, toY);
-                ctx.strokeStyle = color; ctx.lineWidth = 2; ctx.setLineDash([2, 2]); ctx.stroke(); ctx.setLineDash([]);
-                ctx.beginPath();
-                ctx.moveTo(toX, toY);
-                ctx.lineTo(toX - headlen * Math.cos(angle - Math.PI / 6), toY - headlen * Math.sin(angle - Math.PI / 6));
-                ctx.lineTo(toX - headlen * Math.cos(angle + Math.PI / 6), toY - headlen * Math.sin(angle + Math.PI / 6));
-                ctx.fillStyle = color; ctx.fill();
+                const headlen = 8; const dx = toX - fromX; const dy = toY - fromY; const angle = Math.atan2(dy, dx);
+                ctx.beginPath(); ctx.moveTo(fromX, fromY); ctx.lineTo(toX, toY); ctx.strokeStyle = color; ctx.lineWidth = 2; ctx.setLineDash([2, 2]); ctx.stroke(); ctx.setLineDash([]);
+                ctx.beginPath(); ctx.moveTo(toX, toY); ctx.lineTo(toX - headlen * Math.cos(angle - Math.PI / 6), toY - headlen * Math.sin(angle - Math.PI / 6)); ctx.lineTo(toX - headlen * Math.cos(angle + Math.PI / 6), toY - headlen * Math.sin(angle + Math.PI / 6)); ctx.fillStyle = color; ctx.fill();
             }
 
-            // --- NEW: B. Canvas Side View Visualizer ---
+            // B. Canvas Side View
             const ctxSide = els.canvasSide.getContext('2d');
 
             function drawSideView() {
                 const w = els.canvasSide.width;
                 const h = els.canvasSide.height;
                 const centerY = h / 2;
-                // Scale: pixels per micron. Needs to fit Z=250um horizontally.
-                const scaleX = (w * 0.6) / 250; 
-                const scaleY = scaleX * 3; // Exaggerate Y for visibility
+                const scaleX = (w * 0.6) / 300; 
+                const scaleY = scaleX * 4; 
 
                 ctxSide.clearRect(0, 0, w, h);
+                // Optical Axis
+                ctxSide.strokeStyle = 'rgba(255,255,255,0.1)'; ctxSide.setLineDash([5, 5]);
+                ctxSide.beginPath(); ctxSide.moveTo(0, centerY); ctxSide.lineTo(w, centerY); ctxSide.stroke(); ctxSide.setLineDash([]);
 
-                // Optical Axis Line
-                ctxSide.strokeStyle = 'rgba(255,255,255,0.1)';
-                ctxSide.setLineDash([5, 5]);
-                ctxSide.beginPath(); ctxSide.moveTo(0, centerY); ctxSide.lineTo(w, centerY); ctxSide.stroke();
-                ctxSide.setLineDash([]);
-
-                const fiberWidth = 40; // visual width of fiber block
-                const fiberHeight = 80; // visual height of fiber block
-                const fixedFiberXEnd = w * 0.2; // end of fixed fiber
+                const fiberWidth = 40; const fiberHeight = 80; 
+                const fixedFiberXEnd = w * 0.2; 
                 
-                // 1. Fixed Fiber (Left) - Blue
-                ctxSide.fillStyle = '#1e3a8a'; // Dark blue body
-                ctxSide.fillRect(fixedFiberXEnd - fiberWidth, centerY - fiberHeight/2, fiberWidth, fiberHeight);
-                ctxSide.fillStyle = '#3b82f6'; // Core
-                ctxSide.fillRect(fixedFiberXEnd - fiberWidth, centerY - (physics.w0*scaleY), fiberWidth, physics.w0*2*scaleY);
-                // Face
+                // 1. Fixed Fiber
+                ctxSide.fillStyle = '#1e3a8a'; ctxSide.fillRect(fixedFiberXEnd - fiberWidth, centerY - fiberHeight/2, fiberWidth, fiberHeight);
+                ctxSide.fillStyle = '#3b82f6'; ctxSide.fillRect(fixedFiberXEnd - fiberWidth, centerY - (physics.w0_out*scaleY), fiberWidth, physics.w0_out*2*scaleY);
                 ctxSide.beginPath(); ctxSide.moveTo(fixedFiberXEnd, centerY - fiberHeight/2); ctxSide.lineTo(fixedFiberXEnd, centerY + fiberHeight/2); ctxSide.strokeStyle = '#60a5fa'; ctxSide.lineWidth=2; ctxSide.stroke();
 
-                // 2. Moving Fiber (Right) - Red
-                ctxSide.save(); // Save state for transformations
-
-                // Calculate positions
+                // 2. Moving Fiber
                 const zGapPx = state.z * scaleX;
-                // Effective lateral offset magnitude = sqrt(x^2 + y^2)
                 const lateralOffsetPx = Math.sqrt(state.x*state.x + state.y*state.y) * scaleY;
-                // Direction of offset depends on X/Y mix, simplified for side view to just 'up'
                 const movingFiberXStart = fixedFiberXEnd + zGapPx;
-                const movingFiberYCenter = centerY - lateralOffsetPx; // Moves up for +offset
+                const movingFiberYCenter = centerY - lateralOffsetPx; 
 
-                // Apply Transformations: Translate then Rotate around the tip
+                ctxSide.save();
                 ctxSide.translate(movingFiberXStart, movingFiberYCenter);
-                // Effective tilt magnitude = sqrt(tx^2 + ty^2)
-                // Need to negate angle because canvas rotation is clockwise, tilt 'up' is negative angle
                 const tiltRad = -Math.sqrt(state.tx*state.tx + state.ty*state.ty) * (Math.PI/180);
-                // Exaggerate tilt for visualization
                 ctxSide.rotate(tiltRad * 5); 
 
-                // Draw Moving Fiber relative to origin (its tip)
-                ctxSide.fillStyle = '#991b1b'; // Dark red body
-                ctxSide.fillRect(0, -fiberHeight/2, fiberWidth, fiberHeight);
-                ctxSide.fillStyle = '#ef4444'; // Core
-                ctxSide.fillRect(0, -(physics.w0*scaleY), fiberWidth, physics.w0*2*scaleY);
-                // Face
+                ctxSide.fillStyle = '#991b1b'; ctxSide.fillRect(0, -fiberHeight/2, fiberWidth, fiberHeight);
+                ctxSide.fillStyle = '#ef4444'; ctxSide.fillRect(0, -(physics.w0_in*scaleY), fiberWidth, physics.w0_in*2*scaleY);
                 ctxSide.beginPath(); ctxSide.moveTo(0, -fiberHeight/2); ctxSide.lineTo(0, fiberHeight/2); ctxSide.strokeStyle = '#fca5a5'; ctxSide.lineWidth=2; ctxSide.stroke();
+                ctxSide.restore(); 
 
-                ctxSide.restore(); // Restore state
-
-                // 3. Beam Divergence Cone (Simplified)
-                // Draw from fixed fiber tip to moving fiber plane
-                const beamEndX = movingFiberXStart;
-                // Beam radius at distance Z
-                const wzAtZ = physics.w0 * Math.sqrt(1 + Math.pow(state.z/physics.zR, 2));
-                const beamRadiusPx = wzAtZ * scaleY;
+                // 3. Beam Cone
+                const beamStartX = movingFiberXStart;
+                const beamEndX = fixedFiberXEnd;
+                const beamRadStart = physics.w0_in * scaleY;
+                const wzAtReceiver = physics.w0_in * Math.sqrt(1 + Math.pow(state.z/physics.zR_in, 2));
+                const beamRadEnd = wzAtReceiver * scaleY;
 
                 ctxSide.beginPath();
-                ctxSide.moveTo(fixedFiberXEnd, centerY - (physics.w0*scaleY)); // Top of core fixed
-                ctxSide.lineTo(beamEndX, centerY - beamRadiusPx); // Top of beam at Z
-                ctxSide.lineTo(beamEndX, centerY + beamRadiusPx); // Bottom of beam at Z
-                ctxSide.lineTo(fixedFiberXEnd, centerY + (physics.w0*scaleY)); // Bottom of core fixed
+                ctxSide.moveTo(beamStartX, movingFiberYCenter - beamRadStart);
+                ctxSide.lineTo(beamEndX, centerY - beamRadEnd);
+                ctxSide.lineTo(beamEndX, centerY + beamRadEnd);
+                ctxSide.lineTo(beamStartX, movingFiberYCenter + beamRadStart);
                 ctxSide.closePath();
                 
-                // Gradient for beam
-                const grd = ctxSide.createLinearGradient(fixedFiberXEnd, centerY, beamEndX, centerY);
-                grd.addColorStop(0, 'rgba(59, 130, 246, 0.4)');
+                const grd = ctxSide.createLinearGradient(beamStartX, centerY, beamEndX, centerY);
+                grd.addColorStop(0, 'rgba(239, 68, 68, 0.4)');
                 grd.addColorStop(1, 'rgba(59, 130, 246, 0.1)');
                 ctxSide.fillStyle = grd;
                 ctxSide.fill();
             }
 
-
-            // C. Chart.js Sensitivity (Updated for dynamic physics)
+            // C. Charts
             let sensChart = null;
             function initSensChart() {
                 const ctxS = document.getElementById('sensitivityChart');
                 if(!ctxS) return;
-                // ... (Chart initialization logic remains similar to v2, omitted for brevity but included in final file)
-                 sensChart = new Chart(ctxS, {
+                sensChart = new Chart(ctxS, {
                     type: 'line',
-                    data: {
-                        labels: [],
-                        datasets: [
-                            {
-                                label: 'Efficiency Profile',
-                                data: [],
-                                borderColor: '#1e3a8a', borderWidth: 2, tension: 0.4, pointRadius: 0, fill: true, backgroundColor: 'rgba(30, 58, 138, 0.05)'
-                            },
-                            {
-                                label: 'Current Position',
-                                data: [],
-                                borderColor: '#ef4444', backgroundColor: '#ef4444', pointRadius: 6, pointHoverRadius: 8, showLine: false
-                            }
-                        ]
-                    },
-                    options: {
-                        responsive: true, maintainAspectRatio: false, interaction: { intersect: false, mode: 'index' },
-                        plugins: { legend: { display: false }, tooltip: { backgroundColor: 'rgba(15, 23, 42, 0.9)', callbacks: { label: function(context) { return 'Eff: ' + (context.parsed.y * 100).toFixed(1) + '%'; } } } },
-                        scales: { x: { type: 'linear', title: { display: true, text: 'X Offset (μm)', color: '#64748b' }, min: -15, max: 15, grid: { color: '#f1f5f9' }, ticks: { color: '#64748b' } }, y: { min: 0, max: 1.1, title: { display: true, text: 'Efficiency', color: '#64748b' }, ticks: { format: { style: 'percent' }, color: '#64748b' }, grid: { color: '#f1f5f9' } } }
+                    data: { labels: [], datasets: [{ label: 'Profile', data: [], borderColor: '#1e3a8a', borderWidth: 2, tension: 0.4, pointRadius: 0, fill: true, backgroundColor: 'rgba(30, 58, 138, 0.05)' }, { label: 'Current', data: [], borderColor: '#ef4444', backgroundColor: '#ef4444', pointRadius: 6, showLine: false }] },
+                    options: { 
+                        responsive: true, maintainAspectRatio: false, interaction: { intersect: false, mode: 'index' }, 
+                        plugins: { legend: { display: false } }, 
+                        scales: { 
+                            x: { type: 'linear', min: -15, max: 15, title: {display: true, text: 'X Offset (μm)'} }, 
+                            y: { min: 0, max: 1.1, title: {display: true, text: 'Efficiency'} } 
+                        } 
                     }
                 });
             }
@@ -606,7 +709,6 @@
                 if(!sensChart) return;
                 const dataPoints = [];
                 for(let i = -15; i <= 15; i+=0.5) {
-                    // Uses current physics state
                     const eff = calculateCoupling(i, state.y, state.z, state.tx, state.ty);
                     dataPoints.push({x: i, y: eff});
                 }
@@ -616,13 +718,12 @@
                 sensChart.update('none');
             }
 
-            // D. Plotly Heatmap (Updated for dynamic physics)
             let plotlyLoaded = false;
             function initPlotly() {
                  const container = document.getElementById('contourPlot');
                 if(!container || typeof Plotly === 'undefined') return;
                 const data = [{ z: [[0]], type: 'contour', colorscale: 'Viridis' }];
-                const layout = { margin: { l: 40, r: 20, b: 40, t: 20 }, xaxis: { title: 'X (μm)', range: [-15, 15] }, yaxis: { title: 'Y (μm)', range: [-15, 15] }, autosize: true };
+                const layout = { margin: { l: 40, r: 20, b: 40, t: 20 }, xaxis: { title: 'X', range: [-15, 15] }, yaxis: { title: 'Y', range: [-15, 15] }, autosize: true };
                 Plotly.newPlot('contourPlot', data, layout, {displayModeBar: false, responsive: true}).then(() => { plotlyLoaded = true; updatePlotly(); });
             }
 
@@ -634,28 +735,26 @@
                     const y = -limit + (i*step); yArr.push(y); const row = [];
                     for(let j=0; j<size; j++) {
                         const x = -limit + (j*step); if(i===0) xArr.push(x);
-                        // Uses current physics state
                         row.push(calculateCoupling(x, y, state.z, state.tx, state.ty));
                     }
                     zArr.push(row);
                 }
                 const contourTrace = { type: 'contour', z: zArr, x: xArr, y: yArr, colorscale: [ [0, '#0f172a'], [0.2, '#1e3a8a'], [0.5, '#3b82f6'], [0.8, '#60a5fa'], [1, '#ffffff'] ], contours: { coloring: 'heatmap', showlabels: false }, showscale: false };
                 const markerTrace = { type: 'scatter', mode: 'markers', x: [state.x], y: [state.y], marker: { color: 'red', size: 10, symbol: 'cross', line: {color:'white', width:1} } };
-                const layout = { margin: { l: 40, r: 20, b: 40, t: 20 }, xaxis: { title: 'X (μm)', range: [-15, 15] }, yaxis: { title: 'Y (μm)', range: [-15, 15] }, autosize: true, showlegend: false };
+                const layout = { margin: { l: 40, r: 20, b: 40, t: 20 }, xaxis: { range: [-15, 15] }, yaxis: { range: [-15, 15] }, autosize: true, showlegend: false };
                 Plotly.react('contourPlot', [contourTrace, markerTrace], layout);
             }
 
 
             // --- 5. Master Update ---
             function updateUI() {
-                // Update Numeric Displays
+                // Displays
                 els.vals.x.textContent = state.x.toFixed(1) + " μm";
                 els.vals.y.textContent = state.y.toFixed(1) + " μm";
                 els.vals.z.textContent = state.z.toFixed(0) + " μm";
                 els.vals.tx.textContent = state.tx.toFixed(1) + "°";
                 els.vals.ty.textContent = state.ty.toFixed(1) + "°";
 
-                // Calculate main result using current physics params
                 const eff = calculateCoupling(state.x, state.y, state.z, state.tx, state.ty);
                 const db = getLoss(eff);
                 const pct = (eff * 100).toFixed(1);
@@ -664,77 +763,71 @@
                 els.results.loss.textContent = db + " dB";
                 els.results.bar.style.width = pct + "%";
 
-                let barColor = "bg-red-500"; let statusText = ""; let statusClass = "text-red-600";
-                if(eff > 0.9) { barColor = "bg-green-500"; statusText = "Excellent Alignment"; statusClass = "text-green-600 font-bold"; } 
-                else if(eff > 0.5) { barColor = "bg-blue-500"; statusText = "Acceptable Signal"; statusClass = "text-blue-600 font-medium"; } 
-                else if(eff > 0.1) { barColor = "bg-yellow-500"; statusText = "Weak Signal"; statusClass = "text-yellow-600"; } 
-                else { statusText = "High Loss / Misaligned"; }
+                let barColor = "bg-red-500"; let statusKey = "status_loss"; let statusClass = "text-red-600";
+                
+                if(eff > 0.9) { barColor = "bg-green-500"; statusKey = "status_excellent"; statusClass = "text-green-600 font-bold"; } 
+                else if(eff > 0.5) { barColor = "bg-blue-500"; statusKey = "status_acceptable"; statusClass = "text-blue-600 font-medium"; } 
+                else if(eff > 0.1) { barColor = "bg-yellow-500"; statusKey = "status_weak"; statusClass = "text-yellow-600"; } 
+                
+                // Use i18n for dynamic status
+                const statusText = i18n[currentLang][statusKey];
 
                 els.results.bar.className = `absolute top-0 left-0 h-full transition-all duration-300 ease-out ${barColor}`;
                 els.results.feedback.textContent = statusText;
                 els.results.feedback.className = `mt-4 p-2 rounded bg-slate-50 text-xs text-center border border-slate-100 ${statusClass}`;
 
-                // Update All Visualizations
                 drawTopView();
-                drawSideView(); // <-- NEW
+                drawSideView();
                 updateSensChart();
                 updatePlotly();
             }
 
             // --- 6. Event Listeners ---
             function bindEvents() {
-                // Alignment Inputs
-                ['x', 'y', 'z', 'tx', 'ty'].forEach(key => {
-                    els.inputs[key].addEventListener('input', (e) => {
-                        state[key] = parseFloat(e.target.value);
-                        updateUI();
-                    });
+                // Lang Toggle
+                els.langToggle.addEventListener('click', () => {
+                    const newLang = currentLang === 'en' ? 'zh' : 'en';
+                    updateLanguage(newLang);
                 });
 
-                // Reset Btn
+                // Alignment
+                ['x', 'y', 'z', 'tx', 'ty'].forEach(key => {
+                    els.inputs[key].addEventListener('input', (e) => { state[key] = parseFloat(e.target.value); updateUI(); });
+                });
                 els.btn.reset.addEventListener('click', () => {
                     state.x = 0; state.y = 0; state.z = 0; state.tx = 0; state.ty = 0;
                     Object.keys(els.inputs).forEach(k => els.inputs[k].value = 0);
                     updateUI();
                 });
 
-                // Fiber Parameter Inputs
-                els.fiberPreset.addEventListener('change', (e) => {
-                    const preset = fiberData[e.target.value];
-                    if (preset) {
-                        els.lambdaInput.value = preset.lambda;
-                        els.mfdInput.value = preset.mfd;
-                        updatePhysicsParams();
-                        updateUI();
-                    }
-                });
+                // Config Handlers
+                function handlePresetChange(isInput, value) {
+                    const data = fiberData[value] || fiberData['custom'];
+                    const inputEl = isInput ? els.mfdInputIn : els.mfdInputOut;
+                    inputEl.value = data.mfd;
+                    if(value === 'custom') inputEl.focus();
+                    updatePhysicsParams(); updateUI();
+                }
 
-                // Manual Parameter Inputs (trigger recalc on change)
-                ['lambdaInput', 'mfdInput'].forEach(id => {
-                    document.getElementById(id).addEventListener('change', () => {
-                        // Set preset dropwdown to 'custom' if manually changed
-                        els.fiberPreset.value = 'custom';
-                        updatePhysicsParams();
-                        updateUI();
-                    });
-                });
+                els.fiberPresetIn.addEventListener('change', (e) => handlePresetChange(true, e.target.value));
+                els.fiberPresetOut.addEventListener('change', (e) => handlePresetChange(false, e.target.value));
+                els.mfdInputIn.addEventListener('change', () => { els.fiberPresetIn.value='custom'; updatePhysicsParams(); updateUI(); });
+                els.mfdInputOut.addEventListener('change', () => { els.fiberPresetOut.value='custom'; updatePhysicsParams(); updateUI(); });
+                els.systemLambda.addEventListener('change', () => { updatePhysicsParams(); updateUI(); });
 
-                // Resize handling
                 window.addEventListener('resize', () => {
                     if(sensChart) sensChart.resize();
                     if(plotlyLoaded) Plotly.Plots.resize('contourPlot');
-                    drawTopView();
-                    drawSideView();
+                    drawTopView(); drawSideView();
                 });
             }
 
             // --- 7. Ignite ---
-            // Set initial fiber preset values
-            els.fiberPreset.value = 'smf28';
-            els.lambdaInput.value = fiberData['smf28'].lambda;
-            els.mfdInput.value = fiberData['smf28'].mfd;
-
-            updatePhysicsParams(); // Calculate initial physics constants
+            // Set defaults
+            els.fiberPresetIn.value = 'smf28'; els.mfdInputIn.value = fiberData.smf28.mfd;
+            els.fiberPresetOut.value = 'smf28'; els.mfdInputOut.value = fiberData.smf28.mfd;
+            
+            updatePhysicsParams();
             initSensChart();
             initPlotly();
             bindEvents();
